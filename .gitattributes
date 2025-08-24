@@ -1,0 +1,34 @@
+# Default: normalize text files to LF in repo
+* text=auto eol=lf
+
+# Shell scripts: always LF + executable bit
+*.sh text eol=lf executable
+
+# Python scripts: LF + executable bit
+*.py text eol=lf executable
+
+# Config files
+*.conf text eol=lf
+*.cfg  text eol=lf
+*.ini  text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+
+# Docs
+*.md   text eol=lf
+*.txt  text eol=lf
+
+# Binary files (don’t touch)
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.zip binary
+*.gz  binary
+*.tar binary
+*.exe binary
+*.dll binary
+*.so  binary
+*.bin binary
+*.dat binary
