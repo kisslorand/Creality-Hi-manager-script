@@ -15,17 +15,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # USER CONFIGURATION
 # =========================
 
-# Obfuscated token (base64 chunks)
-parts = [
-    "Z2l0aHViX3BhdF8xMUFMN01PR1kwSTVz",  # chunk 1
-    "c2toZHhGTDNWX2hZb3dSN0tXQXJPc2Zh",  # chunk 2
-    "T1ZlUENiSmRQZkdpSEVZNmlDZXR3TTB6",  # chunk 3
-    "MHpVRFVMUEhDV1Y3UXFDTlpqODFB"       # chunk 4
-]
-
-# Decode at runtime
-TOKEN = base64.b64decode("".join(parts)).decode()
-
 REPO = "kisslorand/Creality-Hi-manager-script"
 BRANCH = "main"
 TARGET_DIR = "/mnt/UDISK/hi-manager"
@@ -36,7 +25,6 @@ API_URL_TREE = f"https://api.github.com/repos/{REPO}/git/trees/"
 API_URL_BRANCH = f"https://api.github.com/repos/{REPO}/branches/{BRANCH}"
 
 HEADERS = {
-    "Authorization": f"token {TOKEN}",
     "User-Agent": "PythonDownloader"
 }
 
