@@ -60,6 +60,8 @@ rm -f /bin/wget
 export PATH=/opt/bin:$PATH
 /opt/bin/opkg install entware-opt git git-http curl jq unzip
 
+echo -e "Info: Installing build dependencies..."
+/opt/bin/opkg install gcc make libffi python3-dev
 
 echo -e "Info: Installing SFTP server support..."
 /opt/bin/opkg install openssh-sftp-server
@@ -86,3 +88,6 @@ cp unslung /etc/init.d/unslung
 chmod 755 /etc/init.d/unslung
 ln -sf /etc/init.d/unslung /etc/rc.d/S99unslung
 ln -sf /etc/init.d/unslung /etc/rc.d/K01unslung
+
+echo -e "Press any key to continue..."
+read -n 1 -s

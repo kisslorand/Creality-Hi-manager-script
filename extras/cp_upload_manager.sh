@@ -95,8 +95,13 @@ do_install() {
 
     # Compile shim
     if [ -f "$CP_UPLOAD_SHIM_SRC" ]; then
-        python3 -m py_compile "$CP_UPLOAD_SHIM_SRC" && \
-        cp -f "${CP_UPLOAD_SHIM_SRC}c" "$CP_UPLOAD_SHIM_DST"
+        python3 -m compileall -b "$CP_UPLOAD_SHIM_SRC"
+        if [ -f "${CP_UPLOAD_SHIM_SRC}c" ]; then
+            cp -f "${CP_UPLOAD_SHIM_SRC}c" "$CP_UPLOAD_SHIM_DST"
+        else
+            echo "? Shim compile failed: ${CP_UPLOAD_SHIM_SRC}c not found"
+            exit 1
+        fi
         chmod 755 /mnt/UDISK/cp_upload_shim.pyc
         echo "Shim compiled to $CP_UPLOAD_SHIM_DST"
     else
