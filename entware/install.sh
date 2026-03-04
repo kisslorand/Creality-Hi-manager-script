@@ -35,6 +35,18 @@ download_files() {
   return $?
 }
 
+install_if_available() {
+  local pkg=""
+  for pkg in "$@"; do
+    if /opt/bin/opkg list | grep -q "^${pkg} "; then
+      /opt/bin/opkg install "$pkg"
+      return 0
+    fi
+  done
+  echo "Info: none of these packages are available: $*"
+  return 1
+}
+
 if download_files "$URL/opkg" "/opt/bin/opkg"; then
   download_files "$URL/opkg.conf" "/opt/etc/opkg.conf"
 else
@@ -62,6 +74,7 @@ export PATH=/opt/bin:$PATH
 
 echo -e "Info: Installing build dependencies..."
 /opt/bin/opkg install gcc make libffi python3-dev
+install_if_available pkg-config pkgconf
 
 echo -e "Info: Installing SFTP server support..."
 /opt/bin/opkg install openssh-sftp-server

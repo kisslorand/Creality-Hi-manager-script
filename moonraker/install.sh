@@ -30,7 +30,20 @@ progress() {
 
 install_virtualenv() {
     progress "Installing virtualenv ..."
-    type -p virtualenv > /dev/null || pip install virtualenv
+    if ! type -p virtualenv > /dev/null; then
+        if type -p pip > /dev/null; then
+            pip install virtualenv
+        elif type -p pip3 > /dev/null; then
+            pip3 install virtualenv
+        elif python3 -m pip --version > /dev/null 2>&1; then
+            python3 -m pip install virtualenv
+        elif python3 -m ensurepip --upgrade > /dev/null 2>&1; then
+            python3 -m pip install virtualenv
+        else
+            echo "E: pip is not available and could not be bootstrapped via ensurepip"
+            exit 1
+        fi
+    fi
 
     # update pip to pull pre-built wheels
     if ! grep -qE '^extra-index-url=https://www.piwheels.org/simple$' /etc/pip.conf; then
@@ -41,7 +54,18 @@ install_virtualenv() {
 ensure_build_env() {
     # cffi build needs pkg-config and headers from Entware paths
     if ! type -p pkg-config > /dev/null; then
-        opkg install pkgconf || opkg install pkg-config || true
+        PKGCFG_PKG=""
+        for CANDIDATE in pkg-config pkgconf; do
+            if opkg list | grep -q "^${CANDIDATE} "; then
+                PKGCFG_PKG="${CANDIDATE}"
+                break
+            fi
+        done
+        if [ -n "${PKGCFG_PKG}" ]; then
+            opkg install "${PKGCFG_PKG}"
+        else
+            echo "W: no pkg-config package found in opkg feeds, continuing"
+        fi
     fi
     export PKG_CONFIG_PATH="/opt/lib/pkgconfig:/usr/lib/pkgconfig"
     export CFLAGS="-I/opt/include ${CFLAGS}"
@@ -89,10 +113,15 @@ create_moonraker_venv() {
     "$VENV_DIR/bin/pip" install --only-binary=:all: "cffi<2" || \
         "$VENV_DIR/bin/pip" install "cffi<2"
 
+    REQ_FILE="${MOONRAKER_DIR}/scripts/moonraker-requirements.txt"
+
+    progress "Installing pillow wheel (binary only)..."
+    "$VENV_DIR/bin/pip" install --only-binary=:all: "pillow<=12.1.0,>=9.5.0"
+
+    progress "Installing moonraker python requirements..."
     "$VENV_DIR/bin/pip" install \
-        --upgrade \
         --find-links="${SCRIPT_DIR}/wheels" \
-        --requirement "${MOONRAKER_DIR}/scripts/moonraker-requirements.txt"
+        --requirement "${REQ_FILE}"
 
     "$VENV_DIR/bin/pip" install lmdb
 
