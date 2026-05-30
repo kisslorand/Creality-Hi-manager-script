@@ -51,27 +51,6 @@ install_virtualenv() {
     fi
 }
 
-ensure_build_env() {
-    # cffi build needs pkg-config and headers from Entware paths
-    if ! type -p pkg-config > /dev/null; then
-        PKGCFG_PKG=""
-        for CANDIDATE in pkg-config pkgconf; do
-            if opkg list | grep -q "^${CANDIDATE} "; then
-                PKGCFG_PKG="${CANDIDATE}"
-                break
-            fi
-        done
-        if [ -n "${PKGCFG_PKG}" ]; then
-            opkg install "${PKGCFG_PKG}"
-        else
-            echo "W: no pkg-config package found in opkg feeds, continuing"
-        fi
-    fi
-    export PKG_CONFIG_PATH="/opt/lib/pkgconfig:/usr/lib/pkgconfig"
-    export CFLAGS="-I/opt/include ${CFLAGS}"
-    export LDFLAGS="-L/opt/lib ${LDFLAGS}"
-}
-
 remove_legacy_symlinks() {
     progress "Removing legacy symlinks ..."
     for ENTRY in moonraker moonraker-env; do
@@ -107,23 +86,17 @@ create_moonraker_venv() {
 
     test -d "$VENV_DIR" || virtualenv -p /usr/bin/python3 "$VENV_DIR"
 
-    ensure_build_env
-
-    progress "Installing cffi (wheel preferred)..."
-    "$VENV_DIR/bin/pip" install --only-binary=:all: "cffi<2" || \
-        "$VENV_DIR/bin/pip" install "cffi<2"
+    cp "${SCRIPT_DIR}/pip.conf" "${VENV_DIR}/pip.conf"
 
     REQ_FILE="${MOONRAKER_DIR}/scripts/moonraker-requirements.txt"
 
-    progress "Installing pillow wheel (binary only)..."
-    "$VENV_DIR/bin/pip" install --only-binary=:all: "pillow<=12.1.0,>=9.5.0"
+    progress "Installing lmdb wheel..."
+    "$VENV_DIR/bin/pip" install lmdb
 
     progress "Installing moonraker python requirements..."
     "$VENV_DIR/bin/pip" install \
         --find-links="${SCRIPT_DIR}/wheels" \
         --requirement "${REQ_FILE}"
-
-    "$VENV_DIR/bin/pip" install lmdb
 
     "$VENV_DIR/bin/python" "${SCRIPT_DIR}/fix_venv.py" "$VENV_DIR"
 }
